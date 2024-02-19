@@ -14,20 +14,15 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.punchinapp.data.User
 import com.example.punchinapp.data.UserViewModel
 import java.util.Calendar
-import java.util.Date
 import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.location.Location
-import android.media.audiofx.Equalizer.Settings
-import android.view.View
 import android.widget.ScrollView
 import android.widget.Toast
-import androidx.core.content.getSystemService
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.GoogleApi
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.materialswitch.MaterialSwitch
@@ -40,21 +35,20 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 class TableActivity : AppCompatActivity() {
-    lateinit var punchIn : Button
-    lateinit var punchOut : Button
-    lateinit var userViewModel: UserViewModel
-    lateinit var table : TableLayout
-    private lateinit var locationManager: LocationManager
-    lateinit var latitude : String
-    lateinit var longitude : String
-    lateinit private var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var punchIn : Button
+    private lateinit var punchOut : Button
+    private lateinit var userViewModel: UserViewModel
+    private lateinit var table : TableLayout
+    private lateinit var latitude : String
+    private lateinit var longitude : String
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var lastLocation: Location? = null
-    lateinit var googleSigninClient: GoogleSignInClient
-    lateinit var signOutBtn: Button
-    lateinit var auth : FirebaseAuth
-    lateinit var scrollview: ScrollView
-    lateinit var switchButton : MaterialSwitch
-    var lastEntry = -1
+    private lateinit var googleSigninClient: GoogleSignInClient
+    private lateinit var signOutBtn: Button
+    private lateinit var auth : FirebaseAuth
+    private lateinit var scrollview: ScrollView
+    private lateinit var switchButton : MaterialSwitch
+    private var lastEntry = -1
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -349,42 +343,4 @@ class TableActivity : AppCompatActivity() {
         }
     }
 
-    private fun showDatabase(name: String, date: String, punchIn: String, punchInLoc: String){
-//        table.removeAllViews()
-
-        val tr = TableRow(this)
-        val tv0 = TextView(this)
-        tv0.setText(name)
-        tr.addView(tv0)
-
-        val tv1 = TextView(this)
-        tv1.setText(date)
-        tr.addView(tv1)
-
-        val tv2 = TextView(this)
-        tv2.setText(punchIn)
-        tr.addView(tv2)
-
-        val tv3 = TextView(this)
-        tv3.setText(punchInLoc)
-        tr.addView(tv3)
-
-        val tv4 = TextView(this)
-        tv4.setText("-")
-        tr.addView(tv4)
-
-        val tv5 = TextView(this)
-        tv5.setText("-")
-        tr.addView(tv5)
-
-        val tv6 = TextView(this)
-        tv6.setText("-")
-        tr.addView(tv6)
-
-        tr.setPadding(10,10,10,10)
-//        tr.setBackgroundColor(Color.parseColor("#51B435"))
-
-        table.addView(tr)
-
-        }
     }
