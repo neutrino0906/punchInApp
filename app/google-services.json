@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "322434135794",
+    "project_id": "punchinapp-a78a7",
+    "storage_bucket": "punchinapp-a78a7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:322434135794:android:f2441f331fcd261f25c26b",
+        "android_client_info": {
+          "package_name": "com.example.punchinapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "322434135794-o4frqc1k9pgdrv6rdt404ruegng35lbl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.punchinapp",
+            "certificate_hash": "243282d35a62b62a591f272bf590678b37426323"
+          }
+        },
+        {
+          "client_id": "322434135794-5hc7ov8fh4499mqgnvfh62q9jfj87m7b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQ6aGSt4ckHC7qTZCaX0rmDjuv4Myi10g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "322434135794-5hc7ov8fh4499mqgnvfh62q9jfj87m7b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
