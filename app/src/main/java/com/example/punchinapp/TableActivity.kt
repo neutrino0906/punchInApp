@@ -27,6 +27,9 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlin.math.atan2
@@ -76,7 +79,7 @@ class TableActivity : AppCompatActivity() {
         googleSigninClient = GoogleSignIn.getClient(this, gso)
 
 
-        if(SharedPref.isPunchInEnbled()){
+        if(SharedPref.isPunchInEnabled()){
             buttonEnabled(punchIn)
             buttonDisabled(punchOut)
         }
@@ -139,6 +142,30 @@ class TableActivity : AppCompatActivity() {
                 tv5.setText(i.punchOutLoc)
                 tv5.setPadding(10,10,10,10)
                 tr.addView(tv5)
+
+                if(i.duration!="-") {
+
+                    var duration = Integer.valueOf(i.duration)
+
+                    val seconds = duration % 60
+                    duration /= 60
+
+                    val minutes = duration
+                    duration /= 60
+
+                    val hours = duration
+
+                    val tv6 = TextView(this)
+                    tv6.setText("${hours} hours ${minutes} minutes ${seconds} seconds")
+                    tv6.setPadding(10, 10, 10, 10)
+                    tr.addView(tv6)
+                }
+                else{
+                    val tv6 = TextView(this)
+                    tv6.setText("-")
+                    tv6.setPadding(10, 10, 10, 10)
+                    tr.addView(tv6)
+                }
 
                 tr.setPadding(10,10,10,10)
                 table.addView(tr)
@@ -221,8 +248,25 @@ class TableActivity : AppCompatActivity() {
                     SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(calendar.time)
                 val punchOutLoc = "${latitude}\n${longitude}"
 
+                var punchInTime: String
 
-                userViewModel.updatePunchOutEntry(lastEntry, punchOutTime, punchOutLoc)
+                CoroutineScope(Dispatchers.IO).launch {
+                    punchInTime = userViewModel.getPunchInTime(lastEntry)
+                    val time1 = try{ SimpleDateFormat("hh:mm:ss").parse(punchInTime)
+                    }catch (e: Exception){
+                        SimpleDateFormat("hh:mm:ss").parse("00:00:00")
+                    }
+                    val time2 = SimpleDateFormat("hh:mm:ss").parse(punchOutTime)
+
+
+                    val diff = time2!!.time - time1!!.time
+
+
+
+                    userViewModel.updatePunchOutEntry(lastEntry, punchOutTime, punchOutLoc,(diff/1000).toString())
+                }
+
+
 
 
 

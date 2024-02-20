@@ -33,14 +33,18 @@ class UserViewModel(application: Application) : AndroidViewModel(application){
         return repository.readEntries(name)
     }
 
-    fun updatePunchOutEntry(id:Int, pOutTime: String, pOutLoc: String){
+    fun updatePunchOutEntry(id:Int, pOutTime: String, pOutLoc: String, duration: String){
         viewModelScope.launch(Dispatchers.IO) {
-            repository.updatePunchOutEntry(id,pOutTime, pOutLoc)
+            repository.updatePunchOutEntry(id,pOutTime, pOutLoc, duration)
         }
     }
 
     fun getLastId(): LiveData<Int>{
         return repository.getLastId()
+    }
+
+    suspend fun getPunchInTime(id:Int):String{
+        return repository.getPunchInTime(id)
     }
 
 }

@@ -18,12 +18,16 @@ class UserRepository(private val userDao: UserDao) {
         userDao.deleteEntries()
     }
 
-    suspend fun updatePunchOutEntry(id:Int, pOutTime: String, pOutLoc: String){
-        userDao.updatePunchOutEntry(id,pOutTime, pOutLoc)
+    suspend fun updatePunchOutEntry(id:Int, pOutTime: String, pOutLoc: String, duration: String){
+        userDao.updatePunchOutEntry(id,pOutTime, pOutLoc, duration)
     }
 
     fun getLastId():LiveData<Int>{
         return userDao.getLastId()
+    }
+
+    suspend fun getPunchInTime(id: Int):String{
+        return userDao.getPunchInTime(id)
     }
 
 }

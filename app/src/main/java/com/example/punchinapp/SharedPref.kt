@@ -29,7 +29,7 @@ object SharedPref {
         preferences.edit().putBoolean(IS_PUNCH_IN_ENABLED,value).apply()
     }
 
-    fun isPunchInEnbled():Boolean{
+    fun isPunchInEnabled():Boolean{
         return preferences.getBoolean(IS_PUNCH_IN_ENABLED,true)
     }
 }
