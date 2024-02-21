@@ -20,6 +20,7 @@ import android.content.Intent
 import android.location.Location
 import android.widget.ScrollView
 import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -27,9 +28,10 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.CoroutineScope
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlin.math.atan2
@@ -46,13 +48,11 @@ class TableActivity : AppCompatActivity() {
     private lateinit var longitude : String
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var lastLocation: Location? = null
-    private lateinit var googleSigninClient: GoogleSignInClient
+    private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var signOutBtn: Button
-    private lateinit var auth : FirebaseAuth
+    private var auth : FirebaseUser? = null
     private lateinit var scrollview: ScrollView
     private lateinit var switchButton : MaterialSwitch
-    private var lastEntry = -1
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,7 +64,7 @@ class TableActivity : AppCompatActivity() {
         punchOut = findViewById(R.id.punchOutButton)
         table = findViewById(R.id.tableLayout)
         userViewModel = ViewModelProvider(this)[UserViewModel::class.java]
-        auth = FirebaseAuth.getInstance()
+        auth = FirebaseAuth.getInstance().currentUser
         signOutBtn = findViewById(R.id.SignOutButton)
         scrollview = findViewById(R.id.table_scrollview)
         switchButton = findViewById(R.id.switch_btn)
@@ -76,16 +76,30 @@ class TableActivity : AppCompatActivity() {
             .build()
 
 
-        googleSigninClient = GoogleSignIn.getClient(this, gso)
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
 
 
-        if(SharedPref.isPunchInEnabled()){
-            buttonEnabled(punchIn)
-            buttonDisabled(punchOut)
-        }
-        else{
-            buttonEnabled(punchOut)
-            buttonDisabled(punchIn)
+        lifecycleScope.launch(Dispatchers.IO){
+            val isPunchInEnabled = userViewModel.getPunchOutTime(auth?.displayName.toString())
+            try{
+                if (isPunchInEnabled != "-") {
+                    withContext(Dispatchers.Main){
+                        buttonEnabled(punchIn)
+                        buttonDisabled(punchOut)
+                    }
+
+
+                } else {
+                    withContext(Dispatchers.Main){
+                        buttonEnabled(punchOut)
+                        buttonDisabled(punchIn)
+                    }
+
+                }
+            }catch (e: Exception){
+                buttonEnabled(punchIn)
+                buttonDisabled(punchOut)
+            }
         }
 
         latitude = "0"
@@ -101,11 +115,11 @@ class TableActivity : AppCompatActivity() {
 
         getLastLocation()
 
-        userViewModel.getLastId().observe(this){
-            if(it!=null) lastEntry = it
-        }
+//        userViewModel.getLastId().observe(this){
+//            if(it!=null) lastEntry = it
+//        }
 
-        userViewModel.readEntries(auth.currentUser?.displayName.toString()).observe(this){
+        userViewModel.readEntries(auth?.displayName.toString()).observe(this){
             while (table.childCount > 1) {
                 table.removeView(table.getChildAt(table.childCount - 1))
             }
@@ -180,7 +194,7 @@ class TableActivity : AppCompatActivity() {
 
         signOutBtn.setOnClickListener {
             SharedPref.setLoggedIn(SharedPref.IS_USER_LOGGED_IN,false)
-            googleSigninClient.revokeAccess()
+            googleSignInClient.revokeAccess()
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }
@@ -188,7 +202,7 @@ class TableActivity : AppCompatActivity() {
 
 
         punchIn.setOnClickListener{
-            SharedPref.setPunchInEnabled(false)
+//            SharedPref.setPunchInEnabled(false)
 
             getLastLocation()
             checkLocationPermission()
@@ -213,16 +227,16 @@ class TableActivity : AppCompatActivity() {
                         userViewModel.addEntry(
                             User(
                                 0,
-                                auth.currentUser?.displayName.toString(),
+                                auth?.displayName.toString(),
                                 date,
                                 punchInTime,
                                 "-",
                                 "-",
                                 punchInLoc,
-                                "-"
+                                "-",
                             )
                         )
-                    }else{
+                    } else{
                         Toast.makeText(this, "Out of PunchIn Area", Toast.LENGTH_SHORT).show()
                     }
 //                }
@@ -239,19 +253,20 @@ class TableActivity : AppCompatActivity() {
 
 
         punchOut.setOnClickListener {
-            SharedPref.setPunchInEnabled(true)
+//            SharedPref.setPunchInEnabled(true)
             getLastLocation()
 
             if(checkLocationPermission()){
-                val calendar = Calendar.getInstance()
-                val punchOutTime =
-                    SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(calendar.time)
-                val punchOutLoc = "${latitude}\n${longitude}"
 
-                var punchInTime: String
 
-                CoroutineScope(Dispatchers.IO).launch {
-                    punchInTime = userViewModel.getPunchInTime(lastEntry)
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val calendar = Calendar.getInstance()
+                    val punchOutTime =
+                        SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(calendar.time)
+                    val punchOutLoc = "${latitude}\n${longitude}"
+
+                    var punchInTime: String
+                    punchInTime = userViewModel.getPunchInTime(auth?.displayName.toString())
                     val time1 = try{ SimpleDateFormat("hh:mm:ss").parse(punchInTime)
                     }catch (e: Exception){
                         SimpleDateFormat("hh:mm:ss").parse("00:00:00")
@@ -263,21 +278,13 @@ class TableActivity : AppCompatActivity() {
 
 
 
-                    userViewModel.updatePunchOutEntry(lastEntry, punchOutTime, punchOutLoc,(diff/1000).toString())
+                    userViewModel.updatePunchOutEntry(auth?.displayName.toString(),punchOutTime, punchOutLoc,(diff/1000).toString())
                 }
-
-
-
-
-
                 buttonEnabled(punchIn)
                 buttonDisabled(punchOut)
             }
 
         }
-
-
-
     }
 
 

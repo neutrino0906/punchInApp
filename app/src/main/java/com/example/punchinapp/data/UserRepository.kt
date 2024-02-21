@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 
 class UserRepository(private val userDao: UserDao) {
 
-//    val readAllData: LiveData<User> = userDao.readAll()
 
     fun readEntries(name: String): LiveData<List<User>>{
         return userDao.readEntries(name)
@@ -18,16 +17,20 @@ class UserRepository(private val userDao: UserDao) {
         userDao.deleteEntries()
     }
 
-    suspend fun updatePunchOutEntry(id:Int, pOutTime: String, pOutLoc: String, duration: String){
-        userDao.updatePunchOutEntry(id,pOutTime, pOutLoc, duration)
+    suspend fun updatePunchOutEntry(name: String, pOutTime: String, pOutLoc: String, duration: String){
+        userDao.updatePunchOutEntry(name, pOutTime, pOutLoc, duration)
     }
 
-    fun getLastId():LiveData<Int>{
-        return userDao.getLastId()
+//    fun getLastId():LiveData<Int>{
+//        return userDao.getLastId()
+//    }
+
+    suspend fun getPunchInTime(name: String):String{
+        return userDao.getPunchInTime(name)
     }
 
-    suspend fun getPunchInTime(id: Int):String{
-        return userDao.getPunchInTime(id)
+    suspend fun getPunchOutTime(name: String):String{
+        return userDao.getPunchOutTime(name)
     }
 
 }
