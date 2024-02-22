@@ -19,9 +19,9 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
 class LoginActivity : AppCompatActivity() {
-    lateinit var google_login : Button
-    lateinit var googleSigninClient : GoogleSignInClient
-    lateinit var auth: FirebaseAuth
+    private lateinit var google_login : Button
+    private lateinit var googleSignInClient : GoogleSignInClient
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +38,7 @@ class LoginActivity : AppCompatActivity() {
             .build()
 
 
-        googleSigninClient = GoogleSignIn.getClient(this, gso)
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
 
         google_login.setOnClickListener(){
             onGoogleLogin()
@@ -47,7 +47,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun onGoogleLogin(){
 
-        val signInIntent = googleSigninClient.signInIntent
+        val signInIntent = googleSignInClient.signInIntent
         launcher.launch(signInIntent)
     }
 

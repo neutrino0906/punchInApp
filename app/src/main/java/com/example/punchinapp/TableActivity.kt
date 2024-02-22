@@ -17,7 +17,6 @@ import java.util.Calendar
 import android.Manifest
 import android.content.Context
 import android.content.Intent
-import android.graphics.DiscretePathEffect
 import android.location.Location
 import android.widget.ScrollView
 import android.widget.Toast
@@ -108,17 +107,8 @@ class TableActivity : AppCompatActivity() {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-
-
-
-
-//        userViewModel.deleteEntries()
-
         getLastLocation()
 
-//        userViewModel.getLastId().observe(this){
-//            if(it!=null) lastEntry = it
-//        }
 
         userViewModel.readEntries(auth?.displayName.toString()).observe(this){
             while (table.childCount > 1) {
@@ -171,13 +161,13 @@ class TableActivity : AppCompatActivity() {
                     val hours = duration
 
                     val tv6 = TextView(this)
-                    tv6.setText("${hours} hours ${minutes} minutes ${seconds} seconds")
+                    tv6.text = "${hours} hours ${minutes} minutes ${seconds} seconds"
                     tv6.setPadding(10, 10, 10, 10)
                     tr.addView(tv6)
                 }
                 else{
                     val tv6 = TextView(this)
-                    tv6.setText("-")
+                    tv6.text = "-"
                     tv6.setPadding(10, 10, 10, 10)
                     tr.addView(tv6)
                 }
@@ -188,7 +178,6 @@ class TableActivity : AppCompatActivity() {
         }
 
 
-//        scrollview.fullScroll(View.FOCUS_DOWN)
 
 
 
@@ -203,7 +192,6 @@ class TableActivity : AppCompatActivity() {
 
 
         punchIn.setOnClickListener{
-//            SharedPref.setPunchInEnabled(false)
 
             getLastLocation()
             checkLocationPermission()
@@ -212,15 +200,11 @@ class TableActivity : AppCompatActivity() {
 
             if (checkLocationPermission()) {
                 getLastLocation()
-//                while(latitude=="0" && longitude=="0"){
                     if (calculateDistance(latitude.toDouble(), longitude.toDouble()) < 0.05) {
 
                         val calendar = Calendar.getInstance()
                         val punchInTime = SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(calendar.time)
-//                        val date = Date().toString().subSequence(0, 11).toString()
-//                        val punchInTime =
                         val date = SimpleDateFormat.getDateInstance().format(calendar.time)
-//                            "${calendar.get(Calendar.HOUR)} : ${calendar.get(Calendar.MINUTE)}"
                         val punchInLoc = "${latitude}\n${longitude}"
 
 
@@ -240,21 +224,15 @@ class TableActivity : AppCompatActivity() {
                     } else{
                         Toast.makeText(this, "Out of PunchIn Area", Toast.LENGTH_SHORT).show()
                     }
-//                }
 
                 buttonEnabled(punchOut)
                 buttonDisabled(punchIn)
             }
 
-
-
-
-//             showDatabase("R", date, punchIn, punchInLoc)
         }
 
 
         punchOut.setOnClickListener {
-//            SharedPref.setPunchInEnabled(true)
             getLastLocation()
 
             if(checkLocationPermission()){
@@ -266,8 +244,7 @@ class TableActivity : AppCompatActivity() {
                         SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(calendar.time)
                     val punchOutLoc = "${latitude}\n${longitude}"
 
-                    var punchInTime: String
-                    punchInTime = userViewModel.getPunchInTime(auth?.displayName.toString())
+                    val punchInTime: String = userViewModel.getPunchInTime(auth?.displayName.toString())
                     val time1 = try{ SimpleDateFormat("hh:mm:ss").parse(punchInTime)
                     }catch (e: Exception){
                         SimpleDateFormat("hh:mm:ss").parse("00:00:00")
@@ -365,12 +342,9 @@ class TableActivity : AppCompatActivity() {
     }
 
 
-    fun calculateDistance(
+    private fun calculateDistance(
         startLatitude: Double,
         startLongitude: Double,
-
-//        endLatitude: Double= ,
-//        endLongitude: Double = 77.0318741
     ): Double {
         val earthRadius = 6371.0 // Earth radius in kilometers
         val endLatitude: Double
