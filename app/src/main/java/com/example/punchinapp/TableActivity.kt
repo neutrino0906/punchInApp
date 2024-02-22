@@ -17,6 +17,7 @@ import java.util.Calendar
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.graphics.DiscretePathEffect
 import android.location.Location
 import android.widget.ScrollView
 import android.widget.Toast
@@ -128,32 +129,32 @@ class TableActivity : AppCompatActivity() {
 
                 val tr = TableRow(this)
                 val tv0 = TextView(this)
-                tv0.setText(i.name)
+                tv0.text = i.name
                 tv0.setPadding(10,10,10,10)
                 tr.addView(tv0)
 
                 val tv1 = TextView(this)
-                tv1.setText(i.date)
+                tv1.text = i.date
                 tv1.setPadding(10,10,10,10)
                 tr.addView(tv1)
 
                 val tv2 = TextView(this)
-                tv2.setText(i.punchInTime)
+                tv2.text = i.punchInTime
                 tv2.setPadding(10,10,10,10)
                 tr.addView(tv2)
 
                 val tv3 = TextView(this)
-                tv3.setText(i.punchInLoc)
+                tv3.text = i.punchInLoc
                 tv3.setPadding(10,10,10,10)
                 tr.addView(tv3)
 
                 val tv4 = TextView(this)
-                tv4.setText(i.punchOutTime)
+                tv4.text = i.punchOutTime
                 tv4.setPadding(10,10,10,10)
                 tr.addView(tv4)
 
                 val tv5 = TextView(this)
-                tv5.setText(i.punchOutLoc)
+                tv5.text = i.punchOutLoc
                 tv5.setPadding(10,10,10,10)
                 tr.addView(tv5)
 
@@ -278,10 +279,27 @@ class TableActivity : AppCompatActivity() {
 
 
 
-                    userViewModel.updatePunchOutEntry(auth?.displayName.toString(),punchOutTime, punchOutLoc,(diff/1000).toString())
+                    if(diff>28800000) {
+                        userViewModel.updatePunchOutEntry(
+                            auth?.displayName.toString(),
+                            punchOutTime,
+                            punchOutLoc,
+                            (diff / 1000).toString()
+                        )
+
+                        withContext(Dispatchers.Main){
+                            buttonEnabled(punchIn)
+                            buttonDisabled(punchOut)
+                        }
+                    }
+                    else {
+                        withContext(Dispatchers.Main){
+                            Toast.makeText(baseContext, "Please complete 8 hrs", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                    }
                 }
-                buttonEnabled(punchIn)
-                buttonDisabled(punchOut)
+
             }
 
         }
