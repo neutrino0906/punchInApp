@@ -70,6 +70,8 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+// hh
+
     private fun updateUI(account: GoogleSignInAccount) {
         val credential = GoogleAuthProvider.getCredential(account.idToken , null)
         auth.signInWithCredential(credential).addOnCompleteListener {
