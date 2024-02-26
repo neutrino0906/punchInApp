@@ -60,6 +60,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun handleResults(task: Task<GoogleSignInAccount>) {
+//        Toast.makeText(this, "task.exception.toString(" , Toast.LENGTH_SHORT).show()
         if (task.isSuccessful){
             val account : GoogleSignInAccount? = task.result
             if (account != null){
@@ -69,6 +70,8 @@ class LoginActivity : AppCompatActivity() {
             Toast.makeText(this, task.exception.toString() , Toast.LENGTH_SHORT).show()
         }
     }
+
+
 
 // hh
     ///nitish

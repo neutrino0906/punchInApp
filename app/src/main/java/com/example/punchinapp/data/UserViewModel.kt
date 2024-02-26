@@ -10,11 +10,11 @@ import kotlinx.coroutines.launch
 class UserViewModel(application: Application) : AndroidViewModel(application){
 
 //    val readAllData: LiveData<User>
-    private val repository: UserRepository
+    private val repository: RepositoryImpl
 
     init {
         val userDao = UserDatabase.getDatabase(application).userDao()
-        repository = UserRepository(userDao)
+        repository = RepositoryImpl(userDao)
     }
 
     fun addEntry(user: User){
@@ -25,7 +25,7 @@ class UserViewModel(application: Application) : AndroidViewModel(application){
 
     fun deleteEntries(){
         viewModelScope.launch(Dispatchers.IO) {
-            repository.deleteEnteries()
+            repository.deleteEntries()
         }
     }
 
