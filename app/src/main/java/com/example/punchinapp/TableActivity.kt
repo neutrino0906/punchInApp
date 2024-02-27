@@ -317,9 +317,6 @@ class TableActivity : AppCompatActivity() {
 
 
     private fun getLastLocation(){
-//        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-//        checkLocationPermission()
-//        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION

@@ -73,9 +73,6 @@ class LoginActivity : AppCompatActivity() {
 
 
 
-// hh
-    ///nitish
-
     private fun updateUI(account: GoogleSignInAccount) {
         val credential = GoogleAuthProvider.getCredential(account.idToken , null)
         auth.signInWithCredential(credential).addOnCompleteListener {
