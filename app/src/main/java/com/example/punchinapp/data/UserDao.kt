@@ -28,14 +28,12 @@ interface UserDao {
     suspend fun updatePunchOutEntry(name: String, pOutTime: String, pOutLoc: String, duration: String)
 
 
-//    @Query("SELECT MAX(id) FROM user_checkIn")
-//    fun getLastId():LiveData<Int>
 
     @Query("SELECT punchInTime FROM user_checkIn WHERE id = (SELECT MAX(id) FROM user_checkIn WHERE name = :name)")
-    suspend fun getPunchInTime(name: String):String
+    suspend fun getPunchInTime(name: String) : String
 
 
     @Query("SELECT punchOutTime FROM user_checkIn WHERE id = (SELECT MAX(id) FROM user_checkIn WHERE name = :name)")
-    suspend fun getPunchOutTime(name: String):String
+    suspend fun getPunchOutTime(name: String) : String
 
 }

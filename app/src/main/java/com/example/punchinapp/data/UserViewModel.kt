@@ -39,10 +39,6 @@ class UserViewModel(application: Application) : AndroidViewModel(application){
         }
     }
 
-//    fun getLastId(): LiveData<Int>{
-//        return repository.getLastId()
-//    }
-
     suspend fun getPunchInTime(name: String):String{
         return repository.getPunchInTime(name)
     }
