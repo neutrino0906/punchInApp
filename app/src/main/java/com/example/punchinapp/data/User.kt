@@ -13,7 +13,7 @@ class User (
     val date: String,
     val punchInTime : String,
     val punchOutTime : String,
-    val duration : String,
+    val duration : Int,
     val punchInLoc : String,
     val punchOutLoc : String,
 )

@@ -25,7 +25,7 @@ interface UserDao {
 
 
     @Query("UPDATE user_checkIn SET punchOutTime = :pOutTime, punchOutLoc = :pOutLoc, duration = :duration WHERE id = (SELECT MAX(id) FROM user_checkIn WHERE name = :name )")
-    suspend fun updatePunchOutEntry(name: String, pOutTime: String, pOutLoc: String, duration: String)
+    suspend fun updatePunchOutEntry(name: String, pOutTime: String, pOutLoc: String, duration: Int)
 
 
 
@@ -35,5 +35,8 @@ interface UserDao {
 
     @Query("SELECT punchOutTime FROM user_checkIn WHERE id = (SELECT MAX(id) FROM user_checkIn WHERE name = :name)")
     suspend fun getPunchOutTime(name: String) : String
+
+    @Query("SELECT SUM(duration) FROM user_checkIn WHERE name = :name AND date = :date")
+    suspend fun getTotalDuration(name: String, date : String) : Int
 
 }

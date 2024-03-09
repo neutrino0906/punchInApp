@@ -4,4 +4,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="buttonEnabled">#6ed321</color>
     <color name="buttonDisabled">#A4A4A4</color>
+    <color name="button_enabled_border">#397709</color>
 </resources>

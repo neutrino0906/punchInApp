@@ -10,10 +10,12 @@ interface RepositoryInterface {
 
     suspend fun deleteEntries()
 
-    suspend fun updatePunchOutEntry(name: String, pOutTime: String, pOutLoc: String, duration: String)
+    suspend fun updatePunchOutEntry(name: String, pOutTime: String, pOutLoc: String, duration: Int)
 
     suspend fun getPunchInTime(name: String): String
 
     suspend fun getPunchOutTime(name: String): String
+
+    suspend fun getTotalDuration( name: String, date: String): Int
 
 }

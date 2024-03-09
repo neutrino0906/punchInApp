@@ -32,7 +32,7 @@ class UserViewModel(application: Application) : AndroidViewModel(application){
         return repository.readEntries(name)
     }
 
-    fun updatePunchOutEntry(name: String, pOutTime: String, pOutLoc: String, duration: String){
+    fun updatePunchOutEntry(name: String, pOutTime: String, pOutLoc: String, duration: Int){
         viewModelScope.launch(Dispatchers.IO) {
             repository.updatePunchOutEntry(name, pOutTime, pOutLoc, duration)
         }
@@ -44,6 +44,11 @@ class UserViewModel(application: Application) : AndroidViewModel(application){
 
     suspend fun getPunchOutTime(name : String):String{
         return repository.getPunchOutTime(name)
+    }
+
+
+    suspend fun getTotalDuration(name: String, date: String):Int{
+        return repository.getTotalDuration(name, date)
     }
 
 }

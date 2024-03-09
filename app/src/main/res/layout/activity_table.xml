@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     tools:context=".TableActivity">
 
     <TextView
@@ -41,21 +42,37 @@
         app:layout_constraintLeft_toRightOf="@+id/punchInButton"
         />
 
+    <TextView
+        android:layout_margin="8dp"
+        android:id="@+id/totalLoginTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/punchInButton"
+        android:text="Total Login Time for :"
+        android:textSize="12sp"
+        />
+
     <ScrollView
+
         android:layout_marginTop="10dp"
         android:id="@+id/table_scrollview"
-        app:layout_constraintTop_toBottomOf="@+id/punchInButton"
+        app:layout_constraintTop_toBottomOf="@+id/totalLoginTime"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/SignOutButton"
         android:layout_marginBottom="12dp"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
+
         >
 
         <HorizontalScrollView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:scrollbarAlwaysDrawHorizontalTrack="true"
+            android:scrollbarSize="4dp"
+            >
 
             <TableLayout
                 android:stretchColumns="1"
@@ -126,8 +143,7 @@
 
         android:layout_height="56dp"
         android:layout_marginBottom="16dp"
-        android:background="@drawable/google_login_button"
-        android:backgroundTint="@color/buttonEnabled"
+        android:background="@drawable/button_enabled"
         android:padding="8dp"
         android:text="Sign Out"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -15,7 +15,7 @@ class RepositoryImpl(private val userDao: UserDao) : RepositoryInterface {
         userDao.deleteEntries()
     }
 
-    override suspend fun updatePunchOutEntry(name: String, pOutTime: String, pOutLoc: String, duration: String) {
+    override suspend fun updatePunchOutEntry(name: String, pOutTime: String, pOutLoc: String, duration: Int) {
         userDao.updatePunchOutEntry(name, pOutTime, pOutLoc, duration)
     }
 
@@ -25,6 +25,10 @@ class RepositoryImpl(private val userDao: UserDao) : RepositoryInterface {
 
     override suspend fun getPunchOutTime(name: String): String {
         return userDao.getPunchOutTime(name)
+    }
+
+    override suspend fun getTotalDuration(name: String, date : String): Int {
+        return userDao.getTotalDuration(name,date)
     }
 
 

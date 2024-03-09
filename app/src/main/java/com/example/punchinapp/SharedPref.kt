@@ -24,4 +24,11 @@ object SharedPref {
         return preferences.getBoolean(key, false)
     }
 
+    fun setLastDate(value: String){
+        return preferences.edit().putString("IS_USER_LOGGED_IN",value).apply()
+    }
+
+    fun getLastDate():String? = preferences.getString("IS_USER_LOGGED_IN", "0")
+
+
 }

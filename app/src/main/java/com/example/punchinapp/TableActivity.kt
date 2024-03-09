@@ -15,11 +15,15 @@ import com.example.punchinapp.data.User
 import com.example.punchinapp.data.UserViewModel
 import java.util.Calendar
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.location.Location
+import android.net.Uri
+import android.provider.Settings
 import android.widget.ScrollView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -29,9 +33,12 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.DecimalFormat
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlin.math.atan2
@@ -53,13 +60,19 @@ class TableActivity : AppCompatActivity() {
     private var auth : FirebaseUser? = null
     private lateinit var scrollview: ScrollView
     private lateinit var switchButton : MaterialSwitch
+    private lateinit var totalLogin : TextView
 
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_table)
 
+
+        // Status Bar color
         window.statusBarColor = ContextCompat.getColor(this, R.color.buttonEnabled)
 
+
+        //Initializations
         punchIn = findViewById(R.id.punchInButton)
         punchOut = findViewById(R.id.punchOutButton)
         table = findViewById(R.id.tableLayout)
@@ -68,8 +81,10 @@ class TableActivity : AppCompatActivity() {
         signOutBtn = findViewById(R.id.SignOutButton)
         scrollview = findViewById(R.id.table_scrollview)
         switchButton = findViewById(R.id.switch_btn)
+        totalLogin = findViewById(R.id.totalLoginTime)
+        var totalLoginTime = 0L
 
-
+        //Google SignIn
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
@@ -78,7 +93,7 @@ class TableActivity : AppCompatActivity() {
 
         googleSignInClient = GoogleSignIn.getClient(this, gso)
 
-
+        // Getting Last Recorded button status of the database
         lifecycleScope.launch(Dispatchers.IO){
             val isPunchInEnabled = userViewModel.getPunchOutTime(auth?.displayName.toString())
             try{
@@ -105,11 +120,46 @@ class TableActivity : AppCompatActivity() {
         latitude = "0"
         longitude = "0"
 
+        //getting current location
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         getLastLocation()
 
+        CoroutineScope(Dispatchers.IO).launch{
+            try{
+                val calendar = Calendar.getInstance()
+                val temp = userViewModel.getTotalDuration(auth?.displayName.toString(), SimpleDateFormat.getDateInstance().format(calendar.time))
 
+
+
+                withContext(Dispatchers.Main) {
+                    if (temp != 0) {
+                        totalLoginTime = temp.toLong()
+                        totalLogin.text = "Total Login Time on ${
+                            SimpleDateFormat.getDateInstance().format(calendar.time)
+                        }:  ${longTimeToString(temp.toLong())}"
+                    } else {
+                        totalLogin.text = "Total Login Time on ${
+                            SimpleDateFormat.getDateInstance().format(calendar.time)
+                        }:  00:00:00"
+                    }
+
+                    if(SharedPref.getLastDate() != SimpleDateFormat.getDateInstance().format(calendar.time)){
+                        totalLogin.text = "Total Login Time on ${
+                            SimpleDateFormat.getDateInstance().format(calendar.time)
+                        }:  00:00:00"
+                    }
+                }
+            }
+            catch (e:Exception){
+                val calendar = Calendar.getInstance()
+                totalLogin.text = "Total Login Time on ${
+                    SimpleDateFormat.getDateInstance().format(calendar.time)
+                }:  00:00:00"
+            }
+        }
+
+        //Reading the entries in the database
         userViewModel.readEntries(auth?.displayName.toString()).observe(this){
             while (table.childCount > 1) {
                 table.removeView(table.getChildAt(table.childCount - 1))
@@ -148,9 +198,9 @@ class TableActivity : AppCompatActivity() {
                 tv5.setPadding(10,10,10,10)
                 tr.addView(tv5)
 
-                if(i.duration!="-") {
+                if(i.duration.toString()!="-") {
 
-                    var duration = Integer.valueOf(i.duration)
+                    var duration = Integer.valueOf(i.duration.toString())
 
                     val seconds = duration % 60
                     duration /= 60
@@ -177,11 +227,13 @@ class TableActivity : AppCompatActivity() {
             }
         }
 
+        // Scroll the list to the end
+        scrollview.post{
+            scrollview.fullScroll(ScrollView.FOCUS_DOWN)
+        }
 
 
-
-
-
+        // Sign Out button (Revokes the google access)
         signOutBtn.setOnClickListener {
             SharedPref.setLoggedIn(SharedPref.IS_USER_LOGGED_IN,false)
             googleSignInClient.revokeAccess()
@@ -190,11 +242,12 @@ class TableActivity : AppCompatActivity() {
         }
 
 
-
+        // Punch In button
         punchIn.setOnClickListener{
 
-            getLastLocation()
+
             checkLocationPermission()
+            getLastLocation()
 
 
 
@@ -203,7 +256,11 @@ class TableActivity : AppCompatActivity() {
                     if (calculateDistance(latitude.toDouble(), longitude.toDouble()) < 0.05) {
 
                         val calendar = Calendar.getInstance()
-                        val punchInTime = SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(calendar.time)
+                        SharedPref.setLastDate(SimpleDateFormat.getDateInstance().format(calendar.time))
+                        val punchInTime = SimpleDateFormat("hh:mm:ss a", Locale.getDefault()).format(calendar.time)
+
+
+
                         val date = SimpleDateFormat.getDateInstance().format(calendar.time)
                         val punchInLoc = "${latitude}\n${longitude}"
 
@@ -216,32 +273,45 @@ class TableActivity : AppCompatActivity() {
                                 date,
                                 punchInTime,
                                 "-",
-                                "-",
+                                0,
                                 punchInLoc,
                                 "-",
                             )
                         )
+                        buttonEnabled(punchOut)
+                        buttonDisabled(punchIn)
                     } else{
                         Toast.makeText(this, "Out of PunchIn Area", Toast.LENGTH_SHORT).show()
                     }
 
-                buttonEnabled(punchOut)
-                buttonDisabled(punchIn)
+
+            }
+            else{
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 100)
+            }
+
+            scrollview.post{
+                scrollview.fullScroll(ScrollView.FOCUS_DOWN)
             }
 
         }
 
-
+        // Punch out Button
         punchOut.setOnClickListener {
+
+
             getLastLocation()
+
 
             if(checkLocationPermission()){
 
 
                 lifecycleScope.launch(Dispatchers.IO) {
                     val calendar = Calendar.getInstance()
+                    SharedPref.setLastDate(SimpleDateFormat.getDateInstance().format(calendar.time))
                     val punchOutTime =
-                        SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(calendar.time)
+                        SimpleDateFormat("hh:mm:ss a", Locale.getDefault()).format(calendar.time)
+
                     val punchOutLoc = "${latitude}\n${longitude}"
 
                     val punchInTime: String = userViewModel.getPunchInTime(auth?.displayName.toString())
@@ -255,31 +325,55 @@ class TableActivity : AppCompatActivity() {
                     val diff = time2!!.time - time1!!.time
 
 
+                    totalLoginTime += (diff/1000)
 
-                    if(diff>28800000) {
+                    withContext(Dispatchers.Main){ totalLogin.text = "Total Login Time on ${SimpleDateFormat.getDateInstance().format(calendar.time)}:  ${longTimeToString(totalLoginTime)}" }
+
+
+//                    if(diff>28800000) {
                         userViewModel.updatePunchOutEntry(
                             auth?.displayName.toString(),
                             punchOutTime,
                             punchOutLoc,
-                            (diff / 1000).toString()
+                            ((diff/1000).toInt())
                         )
 
                         withContext(Dispatchers.Main){
                             buttonEnabled(punchIn)
                             buttonDisabled(punchOut)
                         }
-                    }
-                    else {
-                        withContext(Dispatchers.Main){
-                            Toast.makeText(baseContext, "Please complete 8 hrs", Toast.LENGTH_SHORT)
-                                .show()
-                        }
-                    }
+//                    }
+//                    else {
+//                        withContext(Dispatchers.Main){
+//                            Toast.makeText(baseContext, "Please complete 8 hrs", Toast.LENGTH_SHORT)
+//                                .show()
+//                        }
+//                    }
                 }
 
             }
 
+            scrollview.post{
+                scrollview.fullScroll(ScrollView.FOCUS_DOWN)
+            }
+
         }
+    }
+
+    //Converting seconds into 12 hour time format time format
+    private fun longTimeToString(a: Long): String{
+        var duration = a
+        val seconds = duration % 60
+        duration /= 60
+
+        val minutes = duration % 60
+        duration /= 60
+
+        val hours = duration
+
+        val f: NumberFormat = DecimalFormat("00")
+
+        return "${f.format(hours)} : ${f.format(minutes)} : ${f.format(seconds)}"
     }
 
 
@@ -300,11 +394,12 @@ class TableActivity : AppCompatActivity() {
         }
 
 
-//        if(!isLocationEnabled()){
-//            Toast.makeText(this, "Location is offed", Toast.LENGTH_SHORT ).show()
-//            startActivity(Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-//            return false
-//        }
+
+        if(!isLocationEnabled()){
+            Toast.makeText(this, "Location is disabled", Toast.LENGTH_SHORT ).show()
+            startActivity(Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+            return false
+        }
 
         return true
     }
@@ -333,9 +428,6 @@ class TableActivity : AppCompatActivity() {
             }
         }
 
-
-
-
     }
 
 
@@ -348,8 +440,10 @@ class TableActivity : AppCompatActivity() {
         val endLongitude: Double
 
         if(!switchButton.isChecked){
-            endLatitude= 28.4197
-            endLongitude = 77.0386
+//            endLatitude= 28.4197
+//            endLongitude = 77.0386
+              endLatitude = 28.7546236
+              endLongitude = 77.4942542
         }
         else{
             endLatitude= 28.4381097
@@ -373,7 +467,7 @@ class TableActivity : AppCompatActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 2) {
+        if (requestCode == 100) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show()
             }
@@ -382,8 +476,6 @@ class TableActivity : AppCompatActivity() {
             }
         }
     }
-
-
 
 
     }
