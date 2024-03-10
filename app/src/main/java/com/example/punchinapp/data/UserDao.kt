@@ -19,6 +19,9 @@ interface UserDao {
     @Query("SELECT * FROM user_checkIn WHERE name = :name")
     fun readEntries(name : String) : LiveData<List<User>>
 
+    @Query("SELECT * FROM user_checkIn WHERE name = :name AND date = :date")
+    fun readEntriesForDate(name : String, date: String) : LiveData<List<User>>
+
 
     @Query("DELETE FROM user_checkIn")
     suspend fun deleteEntries()

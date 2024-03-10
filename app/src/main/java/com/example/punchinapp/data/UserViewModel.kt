@@ -32,6 +32,10 @@ class UserViewModel(application: Application) : AndroidViewModel(application){
         return repository.readEntries(name)
     }
 
+    fun readEntriesForDate(name: String, date: String): LiveData<List<User>>{
+        return repository.readEntriesForDate(name,date)
+    }
+
     fun updatePunchOutEntry(name: String, pOutTime: String, pOutLoc: String, duration: Int){
         viewModelScope.launch(Dispatchers.IO) {
             repository.updatePunchOutEntry(name, pOutTime, pOutLoc, duration)

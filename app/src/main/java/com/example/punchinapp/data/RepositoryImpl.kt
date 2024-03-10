@@ -11,6 +11,10 @@ class RepositoryImpl(private val userDao: UserDao) : RepositoryInterface {
         return userDao.readEntries(name)
     }
 
+    override fun readEntriesForDate(name: String, date: String): LiveData<List<User>> {
+        return userDao.readEntriesForDate(name, date)
+    }
+
     override suspend fun deleteEntries() {
         userDao.deleteEntries()
     }

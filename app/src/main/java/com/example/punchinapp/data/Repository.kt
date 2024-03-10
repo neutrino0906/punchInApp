@@ -8,6 +8,9 @@ interface RepositoryInterface {
 
     fun readEntries(name: String): LiveData<List<User>>
 
+    fun readEntriesForDate(name: String, date : String): LiveData<List<User>>
+
+
     suspend fun deleteEntries()
 
     suspend fun updatePunchOutEntry(name: String, pOutTime: String, pOutLoc: String, duration: Int)

@@ -21,6 +21,7 @@ import android.content.Intent
 import android.location.Location
 import android.net.Uri
 import android.provider.Settings
+import android.widget.ImageButton
 import android.widget.ScrollView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -61,6 +62,10 @@ class TableActivity : AppCompatActivity() {
     private lateinit var scrollview: ScrollView
     private lateinit var switchButton : MaterialSwitch
     private lateinit var totalLogin : TextView
+    private lateinit var history_btn : ImageButton
+    private val calendar = Calendar.getInstance()
+    private val todayDate = SimpleDateFormat.getDateInstance().format(calendar.time)
+    var totalLoginTime = 0L
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,7 +87,8 @@ class TableActivity : AppCompatActivity() {
         scrollview = findViewById(R.id.table_scrollview)
         switchButton = findViewById(R.id.switch_btn)
         totalLogin = findViewById(R.id.totalLoginTime)
-        var totalLoginTime = 0L
+        history_btn = findViewById(R.id.button_history)
+
 
         //Google SignIn
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -127,8 +133,7 @@ class TableActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.IO).launch{
             try{
-                val calendar = Calendar.getInstance()
-                val temp = userViewModel.getTotalDuration(auth?.displayName.toString(), SimpleDateFormat.getDateInstance().format(calendar.time))
+                val temp = userViewModel.getTotalDuration(auth?.displayName.toString(), todayDate)
 
 
 
@@ -136,31 +141,31 @@ class TableActivity : AppCompatActivity() {
                     if (temp != 0) {
                         totalLoginTime = temp.toLong()
                         totalLogin.text = "Total Login Time on ${
-                            SimpleDateFormat.getDateInstance().format(calendar.time)
+                            todayDate
                         }:  ${longTimeToString(temp.toLong())}"
                     } else {
                         totalLogin.text = "Total Login Time on ${
-                            SimpleDateFormat.getDateInstance().format(calendar.time)
+                            todayDate
                         }:  00:00:00"
                     }
 
                     if(SharedPref.getLastDate() != SimpleDateFormat.getDateInstance().format(calendar.time)){
                         totalLogin.text = "Total Login Time on ${
-                            SimpleDateFormat.getDateInstance().format(calendar.time)
+                            todayDate
                         }:  00:00:00"
                     }
                 }
             }
             catch (e:Exception){
-                val calendar = Calendar.getInstance()
+
                 totalLogin.text = "Total Login Time on ${
-                    SimpleDateFormat.getDateInstance().format(calendar.time)
+                    todayDate
                 }:  00:00:00"
             }
         }
 
         //Reading the entries in the database
-        userViewModel.readEntries(auth?.displayName.toString()).observe(this){
+        userViewModel.readEntriesForDate(auth?.displayName.toString(), todayDate).observe(this){
             while (table.childCount > 1) {
                 table.removeView(table.getChildAt(table.childCount - 1))
             }
@@ -225,11 +230,25 @@ class TableActivity : AppCompatActivity() {
                 tr.setPadding(10,10,10,10)
                 table.addView(tr)
             }
+
+
+            if(table.childCount==1){
+                totalLoginTime = 0
+                    totalLogin.text = "Total Login Time on ${
+                    todayDate
+                }:  00:00:00"
+            }
         }
 
         // Scroll the list to the end
         scrollview.post{
             scrollview.fullScroll(ScrollView.FOCUS_DOWN)
+        }
+
+
+        history_btn.setOnClickListener{
+            val intent = Intent(this, HistoryActivity::class.java)
+            startActivity(intent)
         }
 
 
@@ -255,13 +274,14 @@ class TableActivity : AppCompatActivity() {
                 getLastLocation()
                     if (calculateDistance(latitude.toDouble(), longitude.toDouble()) < 0.05) {
 
-                        val calendar = Calendar.getInstance()
+
                         SharedPref.setLastDate(SimpleDateFormat.getDateInstance().format(calendar.time))
+                        val calendar = Calendar.getInstance()
                         val punchInTime = SimpleDateFormat("hh:mm:ss a", Locale.getDefault()).format(calendar.time)
 
 
 
-                        val date = SimpleDateFormat.getDateInstance().format(calendar.time)
+                        val date = todayDate
                         val punchInLoc = "${latitude}\n${longitude}"
 
 
@@ -308,7 +328,7 @@ class TableActivity : AppCompatActivity() {
 
                 lifecycleScope.launch(Dispatchers.IO) {
                     val calendar = Calendar.getInstance()
-                    SharedPref.setLastDate(SimpleDateFormat.getDateInstance().format(calendar.time))
+                    SharedPref.setLastDate(todayDate)
                     val punchOutTime =
                         SimpleDateFormat("hh:mm:ss a", Locale.getDefault()).format(calendar.time)
 
@@ -327,7 +347,7 @@ class TableActivity : AppCompatActivity() {
 
                     totalLoginTime += (diff/1000)
 
-                    withContext(Dispatchers.Main){ totalLogin.text = "Total Login Time on ${SimpleDateFormat.getDateInstance().format(calendar.time)}:  ${longTimeToString(totalLoginTime)}" }
+                    withContext(Dispatchers.Main){ totalLogin.text = "Total Login Time on ${todayDate}:  ${longTimeToString(totalLoginTime)}" }
 
 
 //                    if(diff>28800000) {
